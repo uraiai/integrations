@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# TypeScript build output
+dist/
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE specific files
+.vscode/
+.idea/
+*.code-workspace
+
+# macOS specific
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test coverage
+coverage/
+
+# API keys and secrets
+*.pem
+.env.development
+.env.test
+.env.production
+
+# Temporary files
+*.log
+*.tmp
+.temp/
