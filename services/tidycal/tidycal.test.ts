@@ -1,4 +1,3 @@
-import { url } from 'inspector';
 import { TidyCalTeams } from './tidycal';
 
 // NOTE: This script is for local testing only. Not used in production.

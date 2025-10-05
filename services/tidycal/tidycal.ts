@@ -1,4 +1,3 @@
-import { error } from 'console';
 import type { FunctionDeclaration } from '../../urai.d.ts';
 
 //#region mocksetup for local testing
