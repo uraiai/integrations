@@ -1,0 +1,22 @@
+{
+  "name": "urai-integrations",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "ts-node services/tidycal/tidycal.test.ts",
+    "test:tidycal": "TIDYCAL_API_KEY=$TIDYCAL_API_KEY ts-node services/tidycal/tidycal.test.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^latest",
+    "ts-node": "^latest",
+    "typescript": "^latest"
+  }
+}
