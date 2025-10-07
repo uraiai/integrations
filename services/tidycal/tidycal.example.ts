@@ -1,4 +1,4 @@
-import { TidyCalBookings, TidyCalTeams, TidyCalBookingTypes } from './tidycal';
+import { TidyCalBookings, TidyCalTeams, TidyCalBookingTypes } from './';
 
 // NOTE: This script is for local testing only. Not used in production.
 // const formatDate = (date: Date) => date.toISOString().split("T")[0];
