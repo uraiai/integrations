@@ -743,7 +743,7 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	/**
 	 * Create a new booking type for a specific team.
 	 */
-	async createTeamBookingTypes(data: {
+	async createTeamBookingType(data: {
 		team_id: number;
 		title: string;
 		description: string;
