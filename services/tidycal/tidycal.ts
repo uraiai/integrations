@@ -7,13 +7,16 @@ import {
 	TimeslotResponse,
 	Question,
 	Contact,
-	Payment
-} from './tidycal.type';
-import { TidyCalAPIBase, TidyCalAPIError } from './tidycal.base';
-import { isValidEmail } from './tidycal.helper';
+	Payment,
+	TidyCalAPIBase,
+	TidyCalAPIError,
+	formatDateTime,
+	isValidEmail,
+	buildPayload,
+	validateBookingTypeData
+} from "./";
 
 const MAX_TITLE_LENGTH = 191;
-const MAX_URL_LENGTH = 60000;
 
 export class TidyCalBookings extends TidyCalAPIBase {
 
@@ -28,7 +31,7 @@ export class TidyCalBookings extends TidyCalAPIBase {
 		include_teams?: boolean;
 	}): Promise<BookingResponse[]> {
 		try {
-			//Build and validate query parameters
+			//#region Build and validate query parameters
 			const params: string[] = [];
 
 			if (options?.starts_at) {
@@ -45,17 +48,18 @@ export class TidyCalBookings extends TidyCalAPIBase {
 				params.push(`ends_at=${options.ends_at.toISOString().split("T")[0]}`);
 			}
 
-			if (options?.cancelled !== undefined) {
+			if (options?.cancelled !== undefined)
 				params.push(`cancelled=${options.cancelled}`);
-			}
+			
 
-			if (options?.page !== undefined) {
+			if (options?.page !== undefined)
 				params.push(`page=${options.page}`);
-			}
+			
 
-			if (options?.include_teams !== undefined) {
+			if (options?.include_teams !== undefined)
 				params.push(`include_teams=${options.include_teams}`);
-			}
+			
+			//#endregion
 
 			const query = params.length ? `?${params.join("&")}` : "";
 			console.log("Fetching bookings with query:", query);
@@ -65,12 +69,12 @@ export class TidyCalBookings extends TidyCalAPIBase {
 				headers: this.headers,
 			});
 
-			if (!response.ok) {
-				throw new Error(`Failed to List Bookings: ${response.status} - ${response.statusText}`);
-			}
+			if (!response.ok)
+				throw new Error(`${response.status} - ${response.statusText}`);
+			
 
 			const result = await response.json();
-			return result.data as BookingResponse[];
+			return result.data;
 
 		} catch (error: any) {
 			this.handleError(error, 'list bookings');
@@ -80,14 +84,14 @@ export class TidyCalBookings extends TidyCalAPIBase {
 	/**
 	 * Get a booking by ID.
 	 */
-	async get_booking(booking_id: number): Promise<BookingResponse> {
+	async get_booking(bookingId: number): Promise<BookingResponse> {
 		try {
 			// Validate required parameter
-			if (!booking_id || typeof booking_id !== 'number') {
+			if (!bookingId || typeof bookingId !== 'number')
 				throw new Error('Booking ID is required and must be a number');
-			}
+			
 
-			const response = await fetch(`${this.baseUrl}/bookings/${booking_id}`, {
+			const response = await fetch(`${this.baseUrl}/bookings/${bookingId}`, {
 				method: 'GET',
 				headers: this.headers
 			});
@@ -96,10 +100,10 @@ export class TidyCalBookings extends TidyCalAPIBase {
 				let errorMsg;
 				switch (response.status) {
 					case 403:
-						errorMsg = `Forbidden: You do not have permission to access booking ID ${booking_id}.`;
+						errorMsg = `Forbidden - User does not have permission to view this booking`;
 						break;
 					case 404:
-						errorMsg = `Not Found: Booking not found.`;
+						errorMsg = `Not Found - Booking not found.`;
 						break;
 					case 422:
 						errorMsg = `Validation Error`;
@@ -111,9 +115,10 @@ export class TidyCalBookings extends TidyCalAPIBase {
 				throw new TidyCalAPIError(response.status, errorMsg);
 			}
 
-			const result = await response.json();
-			return result.data;
-		} catch (error) {
+			const data = await response.json();
+			return data;
+
+		} catch (error: any) {
 			this.handleError(error, 'get booking');
 		}
 	}
@@ -124,9 +129,9 @@ export class TidyCalBookings extends TidyCalAPIBase {
 	async cancel_booking(booking_id: number, reason?: string): Promise<BookingResponse> {
 		try {
 			// Validate required parameter
-			if (!booking_id || typeof booking_id !== 'number') {
+			if (!booking_id || typeof booking_id !== 'number')
 				throw new Error('Booking ID is required and must be a number');
-			}
+			
 
 			const body = reason ? JSON.stringify({ reason }) : JSON.stringify({});
 
@@ -155,10 +160,10 @@ export class TidyCalBookings extends TidyCalAPIBase {
 				throw new TidyCalAPIError(response.status, errorMsg);
 			}
 
-			const result = await response.json();
-			return result.data;
+			const data = await response.json();
+			return data;
 
-		} catch (error) {
+		} catch (error: any) {
 			this.handleError(error, 'cancel booking');
 		}
 	}
@@ -171,26 +176,26 @@ export class TidyCalBookingTypes extends TidyCalAPIBase {
 	async list_booking_types(page: number = 1): Promise<BookingTypeResponse[]> {
 		try {
 			//Validate required parameter
-			if (typeof page !== "number" || page <= 0) {
-				throw new Error("Invalid 'page' value. It must be a positive number.");
+			if (page !== undefined) {
+				if (typeof page !== "number" || page <= 0)
+					throw new Error("Invalid page value. It must be a positive number.");
 			}
 
-			const response = await fetch(`${this.baseUrl}/booking-types/${page}`, {
+			const query = page !== undefined ? `?page=${page}` : "";
+			const url = `${this.baseUrl}/booking-types${query}`;
+
+			const response = await fetch(`${this.baseUrl}/booking-types${query}`, {
 				method: "GET",
 				headers: this.headers
 			});
 
-			if (!response.ok) {
-				throw new TidyCalAPIError(
-					response.status,
-					`API Error in List Booking Types: ${response.status} - ${response.statusText}`);
-			}
+			if (!response.ok)
+				throw new Error(`${response.status} - ${response.statusText}`);
 
-			// --- Parse and return booking types list ---
 			const result = await response.json();
-			return result.data as BookingTypeResponse[];
+			return result.data;
 
-		} catch (error) {
+		} catch (error: any) {
 			this.handleError(error, "list booking types");
 		}
 	}
@@ -216,98 +221,9 @@ export class TidyCalBookingTypes extends TidyCalAPIBase {
 	}): Promise<BookingTypeResponse> {
 		try {
 
-			//#region field validations
-			// validate required field
-			const requiredFields = ["title", "description", "duration_minutes", "url_slug"] as const;
-			for (const field of requiredFields) {
-				if (!data[field]) throw new Error(`Missing required field: '${field}'.`);
-			}
+			validateBookingTypeData(data);
 
-			const { title, description, duration_minutes, url_slug } = data;
-
-			if (typeof title !== "string" || title.length > MAX_TITLE_LENGTH)
-				throw new Error(`Title must be a string up to ${MAX_TITLE_LENGTH} characters.`);
-
-			if (typeof description !== "string")
-				throw new Error("Description must be a valid string containing valid HTML markup.");
-
-			if (typeof duration_minutes !== "number" || duration_minutes < 1)
-				throw new Error("Duration minutes must be a positive number.");
-
-			if (typeof url_slug !== "string" || url_slug.length > MAX_TITLE_LENGTH)
-				throw new Error(`Url Slug must be a string up to ${MAX_TITLE_LENGTH} characters.`);
-
-			if (data.padding_minutes !== undefined && (typeof data.padding_minutes !== "number" || data.padding_minutes < 0)) {
-				throw new Error("'padding_minutes' must be a number greater than or equal to 0.");
-			}
-
-			if (data.latest_availability_days !== undefined &&
-				(typeof data.latest_availability_days !== "number" || data.latest_availability_days < 0 || data.latest_availability_days > 36500)) {
-				throw new Error("'latest_availability_days' must be between 0 and 36500.");
-			}
-
-			if (data.private !== undefined && typeof data.private !== "boolean") {
-				throw new Error("'private' must be a boolean value.");
-			}
-
-			if (data.max_bookings !== undefined && (typeof data.max_bookings !== "number" || data.max_bookings < 1)) {
-				throw new Error("'max_bookings' must be a number greater than or equal to 1.");
-			}
-
-			if (data.max_guest_invites_per_booker !== undefined &&
-				(typeof data.max_guest_invites_per_booker !== "number" || data.max_guest_invites_per_booker < 0 || data.max_guest_invites_per_booker > 10)) {
-				throw new Error("'max_guest_invites_per_booker' must be between 0 and 10.");
-			}
-
-			if (data.display_seats_remaining !== undefined && typeof data.display_seats_remaining !== "boolean") {
-				throw new Error("'display_seats_remaining' must be a boolean value.");
-			}
-
-			if (data.booking_availability_interval_minutes !== undefined &&
-				(typeof data.booking_availability_interval_minutes !== "number" ||
-					data.booking_availability_interval_minutes < 15 || data.booking_availability_interval_minutes > 1440)) {
-				throw new Error("'booking_availability_interval_minutes' must be between 15 and 1440 minutes.");
-			}
-
-			if (data.redirect_url !== undefined &&
-				(typeof data.redirect_url !== "string" || data.redirect_url.length > 60000)) {
-				throw new Error("'redirect_url' must be a valid string not exceeding 60000 characters.");
-			}
-
-			if (data.approval_required !== undefined && typeof data.approval_required !== "boolean") {
-				throw new Error("'approval_required' must be a boolean value.");
-			}
-
-			if (data.booking_type_category_id !== undefined &&
-				(typeof data.booking_type_category_id !== "number" || data.booking_type_category_id < 0)) {
-				throw new Error("'booking_type_category_id' must be a positive integer if provided.");
-			}
-			//#endregion
-
-			const validators: Record<string, (v: any) => boolean> = {
-				padding_minutes: v => typeof v === "number" && v >= 0,
-				latest_availability_days: v => typeof v === "number" && v >= 0 && v <= 36500,
-				private: v => typeof v === "boolean",
-				max_bookings: v => typeof v === "number" && v >= 1,
-				max_guest_invites_per_booker: v => typeof v === "number" && v >= 0 && v <= 10,
-				display_seats_remaining: v => typeof v === "boolean",
-				booking_availability_interval_minutes: v => typeof v === "number" && v >= 15 && v <= 1440,
-				redirect_url: v => typeof v === "string" && v.length <= MAX_URL_LENGTH,
-				approval_required: v => typeof v === "boolean",
-				booking_type_category_id: v => typeof v === "number" && v >= 0
-			};
-
-			for (const [key, validator] of Object.entries(validators)) {
-				const value = data[key as keyof typeof data];
-				if (value !== undefined && !validator(value)) {
-					throw new Error(`'${key}' has an invalid value.`);
-				}
-			}
-
-			const payload: Record<string, any> = {};
-			for (const [key, value] of Object.entries(data)) {
-				if (value !== undefined) payload[key] = value;
-			}
+			const payload = buildPayload(data);
 
 			const response = await fetch(`${this.baseUrl}/booking-types`, {
 				method: "POST",
@@ -331,7 +247,7 @@ export class TidyCalBookingTypes extends TidyCalAPIBase {
 			const result = await response.json();
 			return result.data;
 
-		} catch (error) {
+		} catch (error: any) {
 			this.handleError(error, "create booking type");
 		}
 	}
@@ -346,39 +262,38 @@ export class TidyCalBookingTypes extends TidyCalAPIBase {
 		try {
 			//#region validations
 			// Validate required parameters
-			if (!bookingTypeId || typeof bookingTypeId !== "number") {
+			if (!bookingTypeId || typeof bookingTypeId !== "number")
 				throw new Error("Booking Type ID is required and must be a number.");
-			}
+			
 
-			if (!(params.starts_at instanceof Date) || isNaN(params.starts_at.getTime())) {
+			if (!(params.starts_at instanceof Date) || isNaN(params.starts_at.getTime()))
 				throw new Error("Invalid start date. It must be a valid Date object.");
-			}
+			
 
-			if (!(params.ends_at instanceof Date) || isNaN(params.ends_at.getTime())) {
+			if (!(params.ends_at instanceof Date) || isNaN(params.ends_at.getTime()))
 				throw new Error("Invalid end date. It must be a valid Date object.");
-			}
+			
 			//#endregion
 
-			const starts_at = params.starts_at.toISOString();
-			const ends_at = params.ends_at.toISOString();
+			const starts_at = formatDateTime(params.starts_at);
+			const ends_at = formatDateTime(params.ends_at);
 
 			//Construct query parameters
 			const query = `?starts_at=${encodeURIComponent(starts_at)}&ends_at=${encodeURIComponent(ends_at)}`;
+
 			const response = await fetch(`${this.baseUrl}/booking-types/${bookingTypeId}/timeslots${query}`, {
 				method: "GET",
 				headers: this.headers
 			});
 
-			if (!response.ok) {
-				throw new TidyCalAPIError(response.status,
-					`API Error in List Available Timeslots: ${response.status} - ${response.statusText}`
-				);
-			}
+			if (!response.ok)
+				throw new Error(`${response.status} - ${response.statusText}`);
+
 
 			const result = await response.json();
 			return result.data;
 
-		} catch (error) {
+		} catch (error: any) {
 			this.handleError(error, "list available timeslots");
 		}
 	}
@@ -404,22 +319,22 @@ export class TidyCalBookingTypes extends TidyCalAPIBase {
 			//validated required parameter
 			if (!bookingTypeId || typeof bookingTypeId !== "number")
 				throw new Error('Booking Type ID is required and must be a number');
-			
+
 			const requiredFields = ["starts_at", "name", "email", "timezone"] as const;
 			for (const field of requiredFields) {
 				if (!data[field]) throw new Error(`Missing required field: '${field}'.`);
 			}
 			const { starts_at, name, email, timezone } = data;
-	
+
 			if (!(starts_at instanceof Date) || isNaN(starts_at.getTime()))
 				throw new Error("Start date must be a valid Date object.");
 
 			if (typeof name !== "string" || name.length > MAX_TITLE_LENGTH)
 				throw new Error("Name must be a string not exceeding 191 characters.");
-			
+
 			if (typeof email !== "string" || !isValidEmail(email) || email.length > MAX_TITLE_LENGTH)
 				throw new Error("Email must be a valid address format not exceeding 191 characters.");
-			
+
 			if (typeof timezone !== "string" || timezone.length > MAX_TITLE_LENGTH)
 				throw new Error("Timezone must be a valid format not exceeding 191 characters.");
 			//#endregion
@@ -449,13 +364,13 @@ export class TidyCalBookingTypes extends TidyCalAPIBase {
 			}
 
 			const payload: Record<string, any> = {
-				starts_at: starts_at.toISOString(),
+				starts_at: formatDateTime(starts_at),
 				name,
 				email,
 				timezone
 			};
 
-			if (Array.isArray(data.booking_questions) && data.booking_questions.length) 
+			if (Array.isArray(data.booking_questions) && data.booking_questions.length)
 				payload.booking_questions = data.booking_questions;
 
 			const response = await fetch(`${this.baseUrl}/booking-types/${bookingTypeId}/bookings`, {
@@ -486,7 +401,7 @@ export class TidyCalBookingTypes extends TidyCalAPIBase {
 			const result = await response.json();
 			return result.data;
 
-		} catch (error) {
+		} catch (error: any) {
 			this.handleError(error, "create booking");
 		}
 	}
@@ -499,24 +414,21 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	async list_teams(page: number = 1): Promise<TeamResponse[]> {
 		try {
 			//Validate required parameter
-			if (typeof page !== "number" || page <= 0) {
+			if (typeof page !== "number" || page <= 0)
 				throw new Error("Invalid page value. It must be a positive number.");
-			}
+			
 
 			const response = await fetch(`${this.baseUrl}/teams?page=${page}`, {
 				headers: this.headers
 			});
 
-			if (!response.ok) {
-				throw new TidyCalAPIError(
-					response.status,
-					`API Error in List Teams: ${response.status} - ${response.statusText}`
-				);
-			}
+			if (!response.ok)
+				throw new Error(`${response.status} - ${response.statusText}`);
 
 			const result = await response.json();
 			return result.data;
-		} catch (error) {
+
+		} catch (error: any) {
 			this.handleError(error, 'list teams');
 		}
 	}
@@ -527,9 +439,9 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	async get_team({ team_id }: { team_id: number }): Promise<TeamResponse> {
 		try {
 			// Validate required parameter
-			if (!team_id || typeof team_id !== 'number') {
+			if (!team_id || typeof team_id !== 'number')
 				throw new Error('Team ID is required and must be a number');
-			}
+			
 
 			const response = await fetch(`${this.baseUrl}/teams/${team_id}`, {
 				headers: this.headers
@@ -537,21 +449,22 @@ export class TidyCalTeams extends TidyCalAPIBase {
 
 			// Handle API response status
 			if (!response.ok) {
+				let errorMsg;
 				switch (response.status) {
 					case 403:
-						throw new TidyCalAPIError(403, 'Forbidden - User does not have permission to view this team');
+						errorMsg = 'Forbidden - User does not have permission to view this team';
 					case 404:
-						throw new TidyCalAPIError(404, 'Not Found - Team not found');
+						errorMsg = 'Not Found - Team not found';
 					default:
-						throw new TidyCalAPIError(
-							response.status,
-							`API Error in Get Team: ${response.status} - ${response.statusText}`
-						);
+						errorMsg = `API Error in Get Team: ${response.status} - ${response.statusText}`;
 				}
+				throw new TidyCalAPIError(response.status, errorMsg);
 			}
-			const result = await response.json();
-			return result.data;
-		} catch (error) {
+
+			const data = await response.json();
+			return data;
+
+		} catch (error: any) {
 			this.handleError(error, 'get team');
 		}
 	}
@@ -579,20 +492,19 @@ export class TidyCalTeams extends TidyCalAPIBase {
 
 			//#region validations
 			// Validate required parameter
-			if (!team_id || typeof team_id !== 'number') {
+			if (!team_id || typeof team_id !== 'number')
 				throw new Error('Team ID is required and must be a number');
-			}
 
 			// Optional parameter validations
-			if (start_date && !/^\d{4}-\d{2}-\d{2}$/.test(start_date)) {
+			if (start_date && !/^\d{4}-\d{2}-\d{2}$/.test(start_date))
 				throw new Error('Start date must be in YYYY-MM-DD format');
-			}
-			if (end_date && !/^\d{4}-\d{2}-\d{2}$/.test(end_date)) {
+			
+			if (end_date && !/^\d{4}-\d{2}-\d{2}$/.test(end_date))
 				throw new Error('End date must be in YYYY-MM-DD format');
-			}
-			if (email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/i.test(email)) {
+			
+			if (email && !isValidEmail(email))
 				throw new Error('Invalid email format');
-			}
+			
 			//#endregion
 
 			// Build query parameters
@@ -608,22 +520,22 @@ export class TidyCalTeams extends TidyCalAPIBase {
 
 			// Handle API response status (per OpenAPI spec)
 			if (!response.ok) {
+				let errorMsg;
 				switch (response.status) {
 					case 403:
-						throw new TidyCalAPIError(403, 'Forbidden - User does not have permission to view this team');
+						errorMsg = 'Forbidden - User does not have permission to view this team';
 					case 404:
-						throw new TidyCalAPIError(404, 'Not Found - Team not found');
+						errorMsg = 'Not Found - Team not found';
 					default:
-						throw new TidyCalAPIError(
-							response.status,
-							`API Error in List Team Bookings: ${response.status} - ${response.statusText}`
-						);
+						errorMsg = `API Error in List Team Bookings: ${response.status} - ${response.statusText}`;
 				}
+				throw new TidyCalAPIError(response.status, errorMsg);
 			}
 
 			const result = await response.json();
 			return result.data;
-		} catch (error) {
+
+		} catch (error: any) {
 			this.handleError(error, 'list team bookings');
 		}
 	}
@@ -635,9 +547,9 @@ export class TidyCalTeams extends TidyCalAPIBase {
 		try {
 
 			//#region validations
-			if (!team_id || typeof team_id !== 'number') {
+			if (!team_id || typeof team_id !== 'number')
 				throw new Error('Team ID is required and must be a number');
-			}
+			
 			//#endregion
 
 			// Build query parameters
@@ -652,22 +564,22 @@ export class TidyCalTeams extends TidyCalAPIBase {
 			});
 
 			if (!response.ok) {
+				let errorMsg;
 				switch (response.status) {
 					case 403:
-						throw new TidyCalAPIError(403, 'Forbidden - User does not have permission to view this team');
+						errorMsg = 'Forbidden - User does not have permission to view this team';
 					case 404:
-						throw new TidyCalAPIError(404, 'Not Found - Team not found');
+						errorMsg = 'Not Found - Team not found';
 					default:
-						throw new TidyCalAPIError(
-							response.status,
-							`API Error in List Team Users: ${response.status} - ${response.statusText}`
-						);
+						errorMsg = `API Error in List Team Users: ${response.status} - ${response.statusText}`;
 				}
+				throw new TidyCalAPIError(response.status, errorMsg);
 			}
 
 			const result = await response.json();
 			return result.data;
-		} catch (error) {
+
+		} catch (error: any) {
 			this.handleError(error, 'list team users');
 		}
 	}
@@ -687,21 +599,19 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	}): Promise<AddTeamUserResponse> {
 		try {
 			//#region validations
-			if (!team_id || typeof team_id !== 'number') {
+			if (!team_id || typeof team_id !== 'number')
 				throw new Error('Team ID is required and must be a number');
-			}
-			if (!email || typeof email !== 'string') {
+			
+			if (!email || typeof email !== 'string')
 				throw new Error("It looks like your email address is missing or invalid. Please check and try again.");
-			}
-			if (email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/i.test(email)) {
+			
+			if (email && !isValidEmail(email))
 				throw new Error('Invalid email format');
-			}
-			if (role_name && !['admin', 'user'].includes(role_name)) {
+			
+			if (role_name && !['admin', 'user'].includes(role_name))
 				throw new Error("Invalid role_name: must be 'admin' or 'user'");
-			}
 			//#endregion	
 
-			// API call
 			const response = await fetch(`${this.baseUrl}/teams/${team_id}/users`, {
 				method: 'POST',
 				headers: {
@@ -713,26 +623,25 @@ export class TidyCalTeams extends TidyCalAPIBase {
 				})
 			});
 
-			// --- Error handling ---
 			if (!response.ok) {
+				let errorMsg;
 				switch (response.status) {
 					case 403:
-						throw new TidyCalAPIError(403, "Forbidden - User does not have permission to add users to this team");
+						errorMsg = "Forbidden - User does not have permission to add users to this team";
 					case 404:
-						throw new TidyCalAPIError(404, "Not Found - Team not found");
+						errorMsg = "Not Found - Team not found";
 					case 422:
-						throw new TidyCalAPIError(422, "Validation Error - User already invited or already a member");
+						errorMsg = "Validation Error - User already invited or already a member";
 					default:
-						throw new TidyCalAPIError(
-							response.status,
-							`API Error in Add Team User: ${response.status} - ${response.statusText}`
-						);
+						errorMsg = `API error in Add Team User: ${response.status} - ${response.statusText}`;
 				}
+				throw new TidyCalAPIError(response.status, errorMsg);
 			}
 
-			const result = await response.json();
-			return result;
-		} catch (error) {
+			const data = await response.json();
+			return data;
+
+		} catch (error: any) {
 			this.handleError(error, 'add team user');
 		}
 	}
@@ -749,12 +658,11 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	}): Promise<{ message: string }> {
 
 		//#region validations
-		if (!team_id || typeof team_id !== 'number') {
+		if (!team_id || typeof team_id !== 'number')
 			throw new Error('Team ID is required and must be a number');
-		}
-		if (!team_user_id || typeof team_user_id !== 'number') {
+		
+		if (!team_user_id || typeof team_user_id !== 'number')
 			throw new Error('Team User ID is required and must be a number');
-		}
 		//#endregion
 
 		try {
@@ -780,7 +688,8 @@ export class TidyCalTeams extends TidyCalAPIBase {
 
 			const data = await response.json();
 			return data;
-		} catch (error) {
+
+		} catch (error: any) {
 			this.handleError(error, 'remove team user');
 		}
 	}
@@ -797,19 +706,15 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	}): Promise<BookingTypeResponse[]> {
 
 		//#region validations
-		if (!team_id || typeof team_id !== 'number') {
+		if (!team_id || typeof team_id !== 'number')
 			throw new Error('Team ID is required and must be a number');
-		}
 		//#endregion
 
 		try {
 			//query params
-			const params = new URLSearchParams();
-			if (page !== undefined) {
-				params.append('page', page.toString());
-			}
+			const query = page !== undefined ? `?page=${page}` : "";
 
-			const response = await fetch(`${this.baseUrl}/teams/${team_id}/booking-types${params}`, {
+			const response = await fetch(`${this.baseUrl}/teams/${team_id}/booking-types?${query}`, {
 				headers: this.headers
 			});
 
@@ -829,7 +734,8 @@ export class TidyCalTeams extends TidyCalAPIBase {
 
 			const result = await response.json();
 			return result.data;
-		} catch (error) {
+
+		} catch (error: any) {
 			this.handleError(error, 'list team booking types');
 		}
 	}
@@ -837,23 +743,7 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	/**
 	 * Create a new booking type for a specific team.
 	 */
-	async create_team_booking_type({
-		team_id,
-		title,
-		description,
-		duration_minutes,
-		url_slug,
-		padding_minutes,
-		latest_availability_days,
-		private_booking,
-		max_bookings,
-		max_guest_invites_per_booker,
-		display_seats_remaining,
-		booking_availability_interval_minutes,
-		redirect_url,
-		approval_required,
-		booking_type_category_id
-	}: {
+	async create_team_booking_type(data: {
 		team_id: number;
 		title: string;
 		description: string;
@@ -870,70 +760,22 @@ export class TidyCalTeams extends TidyCalAPIBase {
 		approval_required?: boolean;
 		booking_type_category_id?: number;
 	}): Promise<BookingTypeResponse> {
-
-		//#region validations
-		if (!team_id || typeof team_id !== 'number') {
-			throw new Error('Team ID is required and must be a number');
-		}
-		if (!title || typeof title !== 'string') {
-			throw new Error('Missing required field: title');
-		}
-		if (!description || typeof description !== 'string') {
-			throw new Error('Missing required field: description');
-		}
-		if (!duration_minutes || isNaN(duration_minutes)) {
-			throw new Error('Missing or invalid required field: duration_minutes');
-		}
-		if (!url_slug || typeof url_slug !== 'string') {
-			throw new Error('Missing required field: url_slug');
-		}
-		//#endregion
-
 		try {
-			// Build request body, excluding undefined values
-			const body = Object.fromEntries(
-				Object.entries({
-					title,
-					description,
-					duration_minutes,
-					url_slug,
-					padding_minutes,
-					latest_availability_days,
-					private: private_booking,
-					max_bookings,
-					max_guest_invites_per_booker,
-					display_seats_remaining,
-					booking_availability_interval_minutes,
-					redirect_url,
-					approval_required,
-					booking_type_category_id
-				}).filter(([_, v]) => v !== undefined)
-			);
+			//#region validations
+			if (!data.team_id || typeof data.team_id !== 'number')
+				throw new Error('Team ID is required and must be a number');
 
-			// const body = {
-			// 	title,
-			// 	description,
-			// 	duration_minutes,
-			// 	url_slug,
-			// 	...(padding_minutes !== undefined && { padding_minutes }),
-			// 	...(latest_availability_days !== undefined && { latest_availability_days }),
-			// 	...(private_booking !== undefined && { private: private_booking }),
-			// 	...(max_bookings !== undefined && { max_bookings }),
-			// 	...(max_guest_invites_per_booker !== undefined && { max_guest_invites_per_booker }),
-			// 	...(display_seats_remaining !== undefined && { display_seats_remaining }),
-			// 	...(booking_availability_interval_minutes !== undefined && { booking_availability_interval_minutes }),
-			// 	...(redirect_url && { redirect_url }),
-			// 	...(approval_required !== undefined && { approval_required }),
-			// 	...(booking_type_category_id !== undefined && { booking_type_category_id })
-			// };
+			// Validate required fields
+			validateBookingTypeData(data);
+
+			const { team_id, ...otherData } = data;
+			const payload = buildPayload(otherData);
+			//#endregion
 
 			const response = await fetch(`${this.baseUrl}/teams/${team_id}/booking-types`, {
 				method: 'POST',
-				headers: {
-					...this.headers,
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(body)
+				headers: this.headers,
+				body: JSON.stringify(payload)
 			});
 
 			if (!response.ok) {
@@ -953,7 +795,8 @@ export class TidyCalTeams extends TidyCalAPIBase {
 
 			const result = await response.json();
 			return result.data;
-		} catch (error) {
+
+		} catch (error: any) {
 			this.handleError(error, 'create team booking type');
 		}
 	}
