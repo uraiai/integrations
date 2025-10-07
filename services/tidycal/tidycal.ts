@@ -23,7 +23,7 @@ export class TidyCalBookings extends TidyCalAPIBase {
 	/**
 	 * Get a list of bookings.
 	 */
-	async list_bookings(options?: {
+	async listBookings(options?: {
 		starts_at?: Date;
 		ends_at?: Date;
 		cancelled?: boolean;
@@ -84,7 +84,7 @@ export class TidyCalBookings extends TidyCalAPIBase {
 	/**
 	 * Get a booking by ID.
 	 */
-	async get_booking(bookingId: number): Promise<BookingResponse> {
+	async getBooking(bookingId: number): Promise<BookingResponse> {
 		try {
 			// Validate required parameter
 			if (!bookingId || typeof bookingId !== 'number')
@@ -126,7 +126,7 @@ export class TidyCalBookings extends TidyCalAPIBase {
 	/**
 	 * Cancel a booking by ID.
 	 */
-	async cancel_booking(booking_id: number, reason?: string): Promise<BookingResponse> {
+	async cancelBooking(booking_id: number, reason?: string): Promise<BookingResponse> {
 		try {
 			// Validate required parameter
 			if (!booking_id || typeof booking_id !== 'number')
@@ -173,7 +173,7 @@ export class TidyCalBookingTypes extends TidyCalAPIBase {
 	/** 
 	 * Get a list of booking types
 	*/
-	async list_booking_types(page: number = 1): Promise<BookingTypeResponse[]> {
+	async listBookingTypes(page: number = 1): Promise<BookingTypeResponse[]> {
 		try {
 			//Validate required parameter
 			if (page !== undefined) {
@@ -203,7 +203,7 @@ export class TidyCalBookingTypes extends TidyCalAPIBase {
 	/** 
 	 * Create a new booking type
 	*/
-	async create_booking_type(data: {
+	async createBookingType(data: {
 		title: string;
 		description: string;
 		duration_minutes: number;
@@ -255,7 +255,7 @@ export class TidyCalBookingTypes extends TidyCalAPIBase {
 	/**
 	 * List available timeslots
 	 */
-	async list_available_timeslots(
+	async listAvailableTimeslots(
 		bookingTypeId: number,
 		params: { starts_at: Date; ends_at: Date }
 	): Promise<TimeslotResponse[]> {
@@ -301,7 +301,7 @@ export class TidyCalBookingTypes extends TidyCalAPIBase {
 	/**
 	 * Create a new booking for a specific booking type.
 	 */
-	async create_booking(
+	async createBooking(
 		bookingTypeId: number,
 		data: {
 			starts_at: Date;
@@ -411,7 +411,7 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	/**
 	 * List all teams available to the user
 	 */
-	async list_teams(page: number = 1): Promise<TeamResponse[]> {
+	async listTeams(page: number = 1): Promise<TeamResponse[]> {
 		try {
 			//Validate required parameter
 			if (typeof page !== "number" || page <= 0)
@@ -436,7 +436,7 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	/**
 	 * Get details of a specific team by ID
 	*/
-	async get_team({ team_id }: { team_id: number }): Promise<TeamResponse> {
+	async getTeam({ team_id }: { team_id: number }): Promise<TeamResponse> {
 		try {
 			// Validate required parameter
 			if (!team_id || typeof team_id !== 'number')
@@ -473,7 +473,7 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	 * Get a list of bookings for a specific team.
 	 */
 
-	async list_team_bookings({
+	async listTeamBookings({
 		team_id,
 		page,
 		start_date,
@@ -543,7 +543,7 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	/**
 	 * Get a list of users in a specific team.
 	 */
-	async list_team_users({ team_id, page }: { team_id: number; page?: number; }): Promise<TeamUserResponse[]> {
+	async listTeamUsers({ team_id, page }: { team_id: number; page?: number; }): Promise<TeamUserResponse[]> {
 		try {
 
 			//#region validations
@@ -588,7 +588,7 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	/**
 	 * Add a user to a team by sending an invitation email.
 	 */
-	async add_team_user({
+	async addTeamUser({
 		team_id,
 		email,
 		role_name
@@ -649,7 +649,7 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	/**
 	 * Remove a user from a team.
 	 */
-	async remove_team_user({
+	async removeTeamUser({
 		team_id,
 		team_user_id
 	}: {
@@ -697,7 +697,7 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	/**
 	 * Get a list of booking types for a specific team.
 	 */
-	async list_team_booking_types({
+	async listTeamBookingTypes({
 		team_id,
 		page
 	}: {
@@ -743,7 +743,7 @@ export class TidyCalTeams extends TidyCalAPIBase {
 	/**
 	 * Create a new booking type for a specific team.
 	 */
-	async create_team_booking_type(data: {
+	async createTeamBookingTypes(data: {
 		team_id: number;
 		title: string;
 		description: string;

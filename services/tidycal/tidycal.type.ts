@@ -1,3 +1,5 @@
+// for type definitions	TidyCal API
+// Generated from OpenAPI spec by Datamodel Code Generator (
 export interface TeamResponse {
 	id: number;
 	name: string;
