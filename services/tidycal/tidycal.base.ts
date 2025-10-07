@@ -1,10 +1,3 @@
-export class TidyCalAPIError extends Error {
-	constructor(public status: number, message: string) {
-		super(message);
-		this.name = 'TidyCalAPIError';
-	}
-}
-
 /**
  * Base class that all TidyCal modules extend.
  * Handles authentication, headers, and common error processing.
@@ -23,12 +16,34 @@ export abstract class TidyCalAPIBase {
 		};
 	}
 
-	/** Centralized error handler */
-	protected handleError(error: unknown, operation: string): never {
-		if (error instanceof TidyCalAPIError) {
-			throw error;
+	/**
+ 	* Generic error handler for all TidyCal API calls.
+ 	* Logs and throws a single clean message.
+ 	*/
+	protected handleError(error: any, operation: string): never {
+		let message: string;
+
+		if (error?.status && error?.statusText) {
+			message = `${error.status} - ${error.statusText}`;
+		} else if (error instanceof Error) {
+			message = error.message;
+		} else if (typeof error === "string") {
+			message = error;
+		} else {
+			message = JSON.stringify(error);
 		}
-		const message = error instanceof Error ? error.message : "Unknown error occurred";
-		throw new Error(`Failed to ${operation}: ${message}`);
+
+		// Log once
+		console.error(`${operation.toUpperCase()} ERROR: ${message}`);
+
+		// Throw once
+		throw new Error(`${operation} error: ${message}`);
+	}
+}
+
+export class TidyCalAPIError extends Error {
+	constructor(public status: number, message: string) {
+		super(message);
+		this.name = 'TidyCalAPIError';
 	}
 }
