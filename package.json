@@ -8,8 +8,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "ts-node services/tidycal/tidycal.test.ts",
-    "test:tidycal": "TIDYCAL_API_KEY=$TIDYCAL_API_KEY ts-node services/tidycal/tidycal.test.ts"
+    "test": "ts-node services/tidycal/tidycal.example.ts",
+    "test:tidycal": "TIDYCAL_API_KEY=$TIDYCAL_API_KEY ts-node services/tidycal/tidycal.example.ts"
   },
   "keywords": [],
   "author": "",
