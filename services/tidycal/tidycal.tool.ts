@@ -1,4 +1,3 @@
-import type { FunctionDeclaration } from '../../urai.d.ts';
 import { TidyCalBookingTypes } from 'https://cdn.jsdelivr.net/gh/uraiai/integrations/services/tidycal/tidycal.ts';
 
 const createBookingDeclaration: FunctionDeclaration = {
@@ -47,6 +46,7 @@ const listTimeslotsDeclaration: FunctionDeclaration = {
 };
 
 ToolRegistry.addDeclarations([createBookingDeclaration, listTimeslotsDeclaration]);
+console.log(JSON.stringify([createBookingDeclaration, listTimeslotsDeclaration]));
 
 class TidyCalTools {
     @tool
@@ -107,6 +107,6 @@ class TidyCalTools {
             ends_at: end
         });
 
-        return timeslots;
+        return {timeslots: timeslots};
     }
 }
