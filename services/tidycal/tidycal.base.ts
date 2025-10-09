@@ -6,9 +6,8 @@ export abstract class TidyCalAPIBase {
 	protected readonly baseUrl = "https://tidycal.com/api";
 	protected readonly headers: HeadersInit;
 
-	constructor() {
-		const apiKey = process.env.TIDYCAL_API_KEY;
-		if (!apiKey) throw new Error("TIDYCAL_API_KEY is not set in environment variables.");
+	constructor(apiKey: string) {
+		if (!apiKey) throw new Error("TidyCal API key is required.");
 
 		this.headers = {
 			Authorization: `Bearer ${apiKey}`,

@@ -1,4 +1,6 @@
-import {
+import { TidyCalAPIBase, TidyCalAPIError } from "./tidycal.base.ts";
+import { buildPayload, formatDateTime, isValidEmail } from "./tidycal.helper.ts";
+import type {
 	TeamResponse,
 	TeamUserResponse,
 	BookingResponse,
@@ -8,13 +10,8 @@ import {
 	Question,
 	Contact,
 	Payment,
-	TidyCalAPIBase,
-	TidyCalAPIError,
-	formatDateTime,
-	isValidEmail,
-	buildPayload,
-	validateBookingTypeData
-} from "./";
+} from "./tidycal.type.ts";
+import { validateBookingTypeData } from "./utils/bookingType.validator.ts";
 
 const MAX_TITLE_LENGTH = 191;
 

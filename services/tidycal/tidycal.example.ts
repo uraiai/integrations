@@ -1,11 +1,11 @@
-import { TidyCalBookings, TidyCalTeams, TidyCalBookingTypes } from './';
+import { TidyCalBookings, TidyCalTeams, TidyCalBookingTypes } from './tidycal.ts';
 
 // NOTE: This script is for local testing only. Not used in production.
 // const formatDate = (date: Date) => date.toISOString().split("T")[0];
 
 async function TeamsTest() {
 	try {
-		const TeamsAPI = new TidyCalTeams();
+		const TeamsAPI = new TidyCalTeams(process.env.TIDYCAL_API_KEY!);
 
 		console.log("Starting TidyCal Team Bookings API Tests...");
 
@@ -56,7 +56,7 @@ async function BookingsTest() {
 		console.log("Starting TidyCal Bookings API Tests...");
 
 
-		const BookingsAPI = new TidyCalBookings();
+		const BookingsAPI = new TidyCalBookings(process.env.TIDYCAL_API_KEY!);
 		const bookings = await BookingsAPI.listBookings({
 			// starts_at: new Date("2024-06-01T00:00:00Z"), // ignored
 			// ends_at: new Date("2024-06-30T23:59:59Z"),   // ignored
@@ -90,7 +90,7 @@ async function BookingsTest() {
 
 async function BookingTypesTest() {
 	try {
-		const BookingTypesAPI = new TidyCalBookingTypes();
+		const BookingTypesAPI = new TidyCalBookingTypes(process.env.TIDYCAL_API_KEY!);
 
 		console.log("Starting TidyCal Booking Types API Tests...");
 
