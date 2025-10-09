@@ -1,11 +1,22 @@
 {
     "compilerOptions": {
-        "target": "esnext",
-        "module": "esnext",
+        "target": "ES2020",
+        "module": "CommonJS",
+        "outDir": "./dist",
+        "rootDir": "./",
         "strict": true,
-        "experimentalDecorators": true
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
     },
     "include": [
-       "**/*.ts"
+        "services/**/*",
+        "tests/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
     ]
 }
