@@ -1,5 +1,5 @@
 import type { FunctionDeclaration } from '../../urai.d.ts';
-import { TidyCalBookingTypes } from './tidycal.ts';
+import { TidyCalBookingTypes } from 'https://cdn.jsdelivr.net/gh/uraiai/integrations/services/tidycal/tidycal.ts';
 
 const createBookingDeclaration: FunctionDeclaration = {
     name: "create_booking",
