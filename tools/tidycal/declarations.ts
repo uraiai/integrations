@@ -1,0 +1,53 @@
+import type {FunctionDeclaration} from "../../urai.d.ts";
+const createBookingDeclaration: FunctionDeclaration = {
+    name: "create_booking",
+    description: "Create a new booking for a specific booking type in TidyCal.",
+    parameters: {
+        type: "object",
+        properties: {
+            starts_at: {
+                type: "string",
+                description: "The start time of the booking in local time, in a format like 'YYYY-MM-DD HH:mm:ss' (e.g., '2025-10-10 15:45:00')."
+            },
+            name: {
+                type: "string",
+                description: "The name of the person booking."
+            },
+            email: {
+                type: "string",
+                description: "The email of the person booking."
+            },
+            timezone: {
+                type: "string",
+                description: "The timezone for the booking (e.g., 'America/New_York')."
+            }
+        },
+        required: ["starts_at", "name", "email", "timezone"]
+    }
+};
+
+const listTimeslotsDeclaration: FunctionDeclaration = {
+    name: "list_available_timeslots",
+    description: "List available timeslots in a given city, adjusted to the city's local timezone. Defaults to the next 7 days if no start or end time is provided.",
+    parameters: {
+        type: "object",
+        properties: {
+            city_name: {
+                type: "string",
+                description: "The name of the city to check for available timeslots (e.g., 'New York')."
+            },
+            starts_at: {
+                type: "string",
+                description: "The start date for the search in ISO 8601 format (e.g., '2025-10-01T00:00:00Z'). Optional."
+            },
+            ends_at: {
+                type: "string",
+                description: "The end date for the search in ISO 8601 format (e.g., '2025-10-17T23:59:59Z'). Optional."
+            }
+        },
+        required: ["city_name"]
+    }
+};
+const declarations = [createBookingDeclaration, listTimeslotsDeclaration];
+ToolRegistry.addDeclarations(declarations);
+export default declarations;

@@ -4,7 +4,7 @@ export {};
  * Schema for tool parameters, following a subset of JSON Schema.
  */
 export interface Schema {
-    schema_type: string;
+    type: string;
     description?: string;
     properties?: Record<string, Schema>;
     required?: string[];
