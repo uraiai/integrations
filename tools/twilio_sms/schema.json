@@ -1,0 +1,18 @@
+[
+  {
+    "name": "send_sms",
+    "description": "Send SMS using Twilio API",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to_number": {
+          "type": "string",
+          "description": ""
+        }
+      },
+      "required": [
+        "to_number"
+      ]
+    }
+  }
+]
