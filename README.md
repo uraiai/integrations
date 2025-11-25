@@ -2,4 +2,5 @@
 
 ## Integrations
 
-- [TidyCal Integration](services/tidycal/README.md)
+- [TidyCal Integration](tools/tidycal/README.md)
+- [Twilio SMS Tool](tools/twilio_sms/tool.ts)
