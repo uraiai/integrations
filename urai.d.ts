@@ -4,7 +4,7 @@ export {};
  * Schema for tool parameters, following a subset of JSON Schema.
  */
 export interface Schema {
-    type: string;
+    schema_type: string;
     description?: string;
     properties?: Record<string, Schema>;
     required?: string[];
@@ -60,6 +60,35 @@ declare global {
          * e.g. `meta.vars.MY_CONFIG`
          */
         vars: Record<string, any | undefined>;
+        /**
+         * Urai-specific functions for interacting with the runtime.
+         */
+        urai: {
+            /**
+             * Send a command to the voice call frontend (e.g., hangup, transfer).
+             * This works across execution boundaries, including from setTimeout callbacks.
+             *
+             * @param callId - The call ID (call_sid) to send the command to
+             * @param command - The command object to send (e.g., {command: "hangup"})
+             * @returns Promise<{success: boolean}>
+             *
+             * @example
+             * // Immediate command
+             * const callId = meta.vars.metadata.call_sid;
+             * await meta.urai.sendCommand(callId, { command: "hangup" });
+             *
+             * @example
+             * // Delayed command with setTimeout
+             * const callId = meta.vars.metadata.call_sid;
+             * setTimeout(async () => {
+             *   await meta.urai.sendCommand(callId, {
+             *     command: "transfer",
+             *     destination: "12345"
+             *   });
+             * }, 2000);
+             */
+            sendCommand: (callId: string, command: any) => Promise<{success: boolean}>;
+        };
     };
 
     function fetchJSON(url: string): Promise<any>;
