@@ -1,19 +1,19 @@
 import _declarations from './declarations';
 const d = _declarations
-async function sendSMS(toNumber: string) {
+async function sendSMS({toNumber, body}: {toNumber: string, body: string | undefined}) {
     console.log('Sending SMS to:', toNumber);
     const accountSid = meta.secrets.TWILIO_ACCOUNT_SID;
     const authToken = meta.secrets.TWILIO_ACCOUNT_AUTH
     const twilioNumber = meta.secrets.TWILIO_OUTGOING_NUMBER;
     console.log(meta.vars)
-    // const messageBody = meta.vars.metadata.message_body ||  'Thanks for your interest in Urai. Too book a demo visit https://tidycal.com/team/urai';
-    const messageBody = "funny message goes here"
+
+    const messageBody = body || meta.vars.metadata.message_body ||  "Thank you for your call."
     
     const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
     
     const formData = new URLSearchParams();
     formData.append('To', toNumber);
-    formData.append('From', twilioNumber);
+    formData.append('From', twilioNumber!);
     formData.append('Body', messageBody);
     
     try {
@@ -41,13 +41,30 @@ interface MessageRequest {
     to_number: string;
 }
 
+/**
+ * Represents the request payload for notifying users
+ */
+interface MessageRequestWithBody {
+    /** The recipient's phone number */
+    to_number: string;
+    /** The message to send to the recepient */
+    body: string;
+}
+
 class TwilioTools {
     /**
     * Send SMS using Twilio API
     */
     @tool
     static async send_sms({ to_number }: MessageRequest) {
-        return await sendSMS(to_number);
+        return await sendSMS({toNumber: to_number});
+    }
+    /**
+    * Send SMS using Twilio API with a body
+    */
+    @tool
+    static async send_sms_with_body({ to_number, body }: MessageRequestWithBody) {
+        return await sendSMS({toNumber: to_number, body});
     }
 }
 

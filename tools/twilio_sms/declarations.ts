@@ -16,6 +16,28 @@ const sendSmsDeclaration: FunctionDeclaration = {
   }
 };
 
-const declarations = [sendSmsDeclaration];
+const sendSmsWithBodyDeclaration: FunctionDeclaration = {
+  "name": "send_sms_with_body",
+  "description": "Send SMS using Twilio API with a body",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "to_number": {
+        "type": "string",
+        "description": "The recipient's phone number"
+      },
+      "body": {
+        "type": "string",
+        "description": "The message to send to the recepient"
+      }
+    },
+    "required": [
+      "to_number",
+      "body"
+    ]
+  }
+};
+
+const declarations = [sendSmsDeclaration, sendSmsWithBodyDeclaration];
 ToolRegistry.addDeclarations(declarations);
 export default declarations;

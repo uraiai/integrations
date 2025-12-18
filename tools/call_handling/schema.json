@@ -1,0 +1,34 @@
+[
+  {
+    "name": "transfer",
+    "description": "Transfer a call to a specified destination",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "destination": {
+          "type": "string",
+          "description": "The destination to transfer the call to Number or the extension to transfer the call to For external transfers, usethe full dialable phone number"
+        }
+      },
+      "required": [
+        "destination"
+      ]
+    }
+  },
+  {
+    "name": "hangup",
+    "description": "Hangup a call with an optional reason",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "description": "Optional reason for hanging up the call"
+        }
+      },
+      "required": [
+        "reason"
+      ]
+    }
+  }
+]
