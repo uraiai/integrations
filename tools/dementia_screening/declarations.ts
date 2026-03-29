@@ -1,0 +1,95 @@
+import type {FunctionDeclaration} from "../../urai.d.ts";
+const saveScreeningReportDeclaration: FunctionDeclaration = {
+  "name": "save_screening_report",
+  "description": "Saves the complete dementia screening report to the Medavie database. This tool should be called at the end of the interview process, or immediately before transferring the call to a human agent if escalation criteria are met.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "first_name": {
+        "type": "string",
+        "description": "The patient's first name"
+      },
+      "last_name": {
+        "type": "string",
+        "description": "The patient's last name"
+      },
+      "date_of_birth": {
+        "type": "string",
+        "description": "The patient's date of birth in ISO format (YYYY-MM-DD)"
+      },
+      "sex_assigned_at_birth": {
+        "type": "string",
+        "description": "The sex assigned to the patient at birth"
+      },
+      "level_of_education": {
+        "type": "string",
+        "description": "The patient's highest level of education completed"
+      },
+      "orientation_year_response": {
+        "type": "string",
+        "description": "The caller's response when asked for the current year"
+      },
+      "orientation_month_response": {
+        "type": "string",
+        "description": "The caller's response when asked for the current month"
+      },
+      "orientation_date_response": {
+        "type": "string",
+        "description": "The caller's response when asked for today's date"
+      },
+      "orientation_place_response": {
+        "type": "string",
+        "description": "The caller's response when asked to identify their current location or building"
+      },
+      "health_conditions": {
+        "type": "string",
+        "description": "Object containing the patient's reported chronic health conditions"
+      },
+      "digit_span_forward_provided": {
+        "type": "string",
+        "description": "The sequence of digits read to the caller for the forward span test"
+      },
+      "digit_span_forward_response": {
+        "type": "string",
+        "description": "The caller's attempt to repeat the forward digits in the same order"
+      },
+      "digit_span_reverse_provided": {
+        "type": "string",
+        "description": "The sequence of digits read to the caller for the reverse span test"
+      },
+      "digit_span_reverse_response": {
+        "type": "string",
+        "description": "The caller's attempt to repeat the reverse digits in backwards order"
+      },
+      "transfer_reason": {
+        "type": "string",
+        "description": "The specific reason for escalating to a human, if applicable (e.g., 'Significant disorientation')"
+      },
+      "is_transferred": {
+        "type": "boolean",
+        "description": "Boolean flag indicating if the caller met escalation criteria and was transferred to a human agent"
+      }
+    },
+    "required": [
+      "first_name",
+      "last_name",
+      "date_of_birth",
+      "sex_assigned_at_birth",
+      "level_of_education",
+      "orientation_year_response",
+      "orientation_month_response",
+      "orientation_date_response",
+      "orientation_place_response",
+      "health_conditions",
+      "digit_span_forward_provided",
+      "digit_span_forward_response",
+      "digit_span_reverse_provided",
+      "digit_span_reverse_response",
+      "is_transferred"
+    ]
+  }
+};
+
+const declarations = [saveScreeningReportDeclaration];
+ToolRegistry.addDeclarations(declarations);
+export default declarations;

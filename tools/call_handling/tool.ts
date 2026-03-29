@@ -25,7 +25,7 @@ class CallHandling{
               command: "transfer",
               destination,
           });
-      }, 5000);
+      }, 20000);
     return { success: true, status: "transferring" }
   }
 
@@ -38,7 +38,7 @@ class CallHandling{
               command: "hangup",
               reason
           });
-      }, 5000);
+      }, 20000);
     return { success: true, status: "hanging_up" }
   }
 }
